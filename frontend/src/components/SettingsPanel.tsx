@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { MQTTService } from '../services/mqttService'
+import { MQTTService, StatusData } from '../services/mqttService'
 import './SettingsPanel.css'
 
 interface SettingsPanelProps {
@@ -29,7 +29,7 @@ export default function SettingsPanel({
     { id: 1, name: 'A Blok', totalApartments: 50, available: 50, sold: 0, reserved: 0, salesRate: 0 },
     { id: 2, name: 'B Blok', totalApartments: 50, available: 50, sold: 0, reserved: 0, salesRate: 0 },
     { id: 3, name: 'C Blok', totalApartments: 50, available: 50, sold: 0, reserved: 0, salesRate: 0 },
-    { id: 4, name: 'd 500', totalApartments: 150, available: 150, sold: 0, reserved: 0, salesRate: 0 },
+    { id: 4, name: 'D 500', totalApartments: 150, available: 150, sold: 0, reserved: 0, salesRate: 0 },
   ])
   const [esp32Connected, setEsp32Connected] = useState(false)
   const [showNotification, setShowNotification] = useState(false)
@@ -47,7 +47,7 @@ export default function SettingsPanel({
 
   // MQTT durum mesajlarını dinle
   useEffect(() => {
-    const handleStatusUpdate = (data: any) => {
+    const handleStatusUpdate = (data: StatusData) => {
       if (data.apartments && Array.isArray(data.apartments)) {
         updateBuildingStats(data.building || 1, data.apartments)
         setEsp32Connected(true)
@@ -59,7 +59,7 @@ export default function SettingsPanel({
     MQTTService.onStatus(handleStatusUpdate)
 
     return () => {
-      MQTTService.onStatus(undefined as any)
+      MQTTService.onStatus(undefined)
     }
   }, [])
 

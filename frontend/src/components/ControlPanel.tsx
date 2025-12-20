@@ -155,4 +155,3 @@ export default function ControlPanel({ currentBuilding, onBuildingChange, mqttCo
     </div>
   )
 }
-

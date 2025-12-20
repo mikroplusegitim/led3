@@ -15,6 +15,18 @@ export interface ScenarioCommand {
   scenario: 0 | 1 | 2  // 0: KAPAT, 1: KARŞILAMA, 2: GECE AMBİYANSI
 }
 
+export interface StatusData {
+  deviceId?: string
+  building?: number
+  showSold?: boolean
+  peyzaj?: boolean
+  sokak?: boolean
+  animation?: number
+  apartments?: number[]
+}
+
+type StatusCallback = (data: StatusData) => void
+
 class MQTTServiceClass {
   private client: MqttClient | null = null
   private brokerUrl: string
@@ -22,6 +34,7 @@ class MQTTServiceClass {
   private topicStatus: string = 'maket/status'
   private onConnectCallback?: () => void
   private onDisconnectCallback?: () => void
+  private onStatusCallback?: StatusCallback
 
   constructor() {
     // WebSocket üzerinden MQTT bağlantısı (browser için)
@@ -59,8 +72,12 @@ class MQTTServiceClass {
       this.client.on('message', (topic, message) => {
         if (topic === this.topicStatus) {
           try {
-            const data = JSON.parse(message.toString())
+            const data = JSON.parse(message.toString()) as StatusData
             console.log('Durum güncellendi:', data)
+            // Status callback'i çağır
+            if (this.onStatusCallback) {
+              this.onStatusCallback(data)
+            }
           } catch (e) {
             console.error('JSON parse hatası:', e)
           }
@@ -84,6 +101,11 @@ class MQTTServiceClass {
 
   onDisconnect(callback: () => void) {
     this.onDisconnectCallback = callback
+  }
+
+  // BU FONKSİYON EKLENDİ - Hata düzeltmesi
+  onStatus(callback: StatusCallback | undefined) {
+    this.onStatusCallback = callback
   }
 
   private publish(command: object) {
@@ -138,4 +160,3 @@ class MQTTServiceClass {
 }
 
 export const MQTTService = new MQTTServiceClass()
-

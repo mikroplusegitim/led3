@@ -4,7 +4,7 @@ import mqtt from 'mqtt'
 import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken'
 import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
+import { dirname } from 'path'
 
 dotenv.config()
 
@@ -31,19 +31,6 @@ const mqttOptions = {
   rejectUnauthorized: process.env.MQTT_TLS === 'true'
 }
 
-if (process.env.MQTT_TLS === 'true') {
-  const fs = await import('fs')
-  if (process.env.MQTT_CA_PATH) {
-    mqttOptions.ca = fs.readFileSync(process.env.MQTT_CA_PATH)
-  }
-  if (process.env.MQTT_CERT_PATH) {
-    mqttOptions.cert = fs.readFileSync(process.env.MQTT_CERT_PATH)
-  }
-  if (process.env.MQTT_KEY_PATH) {
-    mqttOptions.key = fs.readFileSync(process.env.MQTT_KEY_PATH)
-  }
-}
-
 const mqttClient = mqtt.connect(mqttOptions)
 
 mqttClient.on('connect', () => {
@@ -66,7 +53,6 @@ mqttClient.on('message', (topic, message) => {
     try {
       const data = JSON.parse(message.toString())
       console.log('📨 Durum güncellendi:', data)
-      // Burada WebSocket ile frontend'e gönderilebilir
     } catch (e) {
       console.error('JSON parse hatası:', e)
     }
@@ -79,7 +65,6 @@ const authenticateToken = (req, res, next) => {
   const token = authHeader && authHeader.split(' ')[1]
 
   if (!token) {
-    // Demo için token zorunlu değil, production'da aktif edilmeli
     return next()
   }
 
@@ -242,25 +227,23 @@ app.post('/api/building', authenticateToken, (req, res) => {
   })
 })
 
-// Login endpoint (demo için basit)
+// Login endpoint
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body
 
-  // Demo için sabit kullanıcı (production'da veritabanı kullanılmalı)
   if (username === 'admin' && password === 'admin') {
     const token = jwt.sign(
       { username, role: 'admin' },
       process.env.JWT_SECRET || 'demo-secret',
       { expiresIn: '24h' }
     )
-    res.json({ token, username })
+    res.json({ success: true, token })
   } else {
     res.status(401).json({ error: 'Geçersiz kullanıcı adı veya şifre' })
   }
 })
 
 app.listen(PORT, () => {
-  console.log(`🚀 Backend server ${PORT} portunda çalışıyor`)
+  console.log(`🚀 Backend sunucusu ${PORT} portunda çalışıyor`)
   console.log(`📡 MQTT Broker: ${mqttOptions.host}:${mqttOptions.port}`)
 })
-
