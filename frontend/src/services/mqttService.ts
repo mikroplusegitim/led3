@@ -38,7 +38,7 @@ class MQTTServiceClass {
 
   constructor() {
     // WebSocket üzerinden MQTT bağlantısı (browser için)
-    this.brokerUrl = import.meta.env.VITE_MQTT_WS_URL || 'ws://localhost:9001'
+    this.brokerUrl = localStorage.getItem('mqttUrl') || 'ws://localhost:9001'
   }
 
   connect() {
@@ -103,7 +103,7 @@ class MQTTServiceClass {
     this.onDisconnectCallback = callback
   }
 
-  // BU FONKSİYON EKLENDİ - Hata düzeltmesi
+  // ÖNEMLİ: Bu fonksiyon SettingsPanel'de kullanılıyor
   onStatus(callback: StatusCallback | undefined) {
     this.onStatusCallback = callback
   }
@@ -156,6 +156,16 @@ class MQTTServiceClass {
     this.publish({
       building
     })
+  }
+
+  // MQTT URL'ini değiştir ve yeniden bağlan
+  reconnect(newUrl?: string) {
+    if (newUrl) {
+      this.brokerUrl = newUrl
+      localStorage.setItem('mqttUrl', newUrl)
+    }
+    this.disconnect()
+    this.connect()
   }
 }
 
