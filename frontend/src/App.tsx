@@ -1,47 +1,70 @@
-import { useState, useEffect } from 'react'
-import ControlPanel from './components/ControlPanel'
-import SettingsPanel from './components/SettingsPanel'
-import { MQTTService } from './services/mqttService'
-import './App.css'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import Login from './pages/Login';
+import SignUp from './pages/SignUp';
+import Dashboard from './pages/Dashboard';
+import './App.css';
 
-function App() {
-  const [settingsOpen, setSettingsOpen] = useState(false)
-  const [currentBuilding, setCurrentBuilding] = useState(1)
-  const [mqttConnected, setMqttConnected] = useState(false)
+// Protected Route Component
+function ProtectedRoute({ children }: { children: JSX.Element }) {
+  const { currentUser, loading } = useAuth();
 
-  useEffect(() => {
-    // MQTT bağlantısını başlat
-    MQTTService.connect()
-    MQTTService.onConnect(() => setMqttConnected(true))
-    MQTTService.onDisconnect(() => setMqttConnected(false))
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <div>Loading...</div>
+      </div>
+    );
+  }
 
-    return () => {
-      MQTTService.disconnect()
-    }
-  }, [])
-
-  return (
-    <>
-      <ControlPanel 
-        currentBuilding={currentBuilding}
-        onBuildingChange={setCurrentBuilding}
-        mqttConnected={mqttConnected}
-      />
-      <SettingsPanel 
-        isOpen={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-        currentBuilding={currentBuilding}
-        onBuildingChange={setCurrentBuilding}
-      />
-      <button
-        className="settings-toggle"
-        onClick={() => setSettingsOpen(!settingsOpen)}
-        aria-label="Ayarlar"
-      >
-        <span className="hamburger-icon">☰</span>
-      </button>
-    </>
-  )
+  return currentUser ? children : <Navigate to="/login" />;
 }
 
-export default App
+// Public Route (redirect to dashboard if already logged in)
+function PublicRoute({ children }: { children: JSX.Element }) {
+  const { currentUser, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <div>Loading...</div>
+      </div>
+    );
+  }
+
+  return currentUser ? <Navigate to="/dashboard" /> : children;
+}
+
+function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/login" element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          } />
+          <Route path="/signup" element={
+            <PublicRoute>
+              <SignUp />
+            </PublicRoute>
+          } />
+
+          {/* Protected routes */}
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+
+          {/* Default redirect */}
+          <Route path="/" element={<Navigate to="/dashboard" />} />
+        </Routes>
+      </AuthProvider>
+    </Router>
+  );
+}
+
+export default App;

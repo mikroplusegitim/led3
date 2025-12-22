@@ -60,10 +60,10 @@ class HiveMQServiceClass {
     return `tenant/${this.tenantId}/device/${this.deviceId}/cmd`;
   }
 
-  private getStatusTopic(): string {
-    if (!this.tenantId || !this.deviceId) return '';
-    return `tenant/${this.tenantId}/device/${this.deviceId}/status`;
-  }
+  // private getStatusTopic(): string {
+  //   if (!this.tenantId || !this.deviceId) return '';
+  //   return `tenant/${this.tenantId}/device/${this.deviceId}/status`;
+  // }
 
   private getAllStatusTopic(): string {
     if (!this.tenantId) return '';
@@ -104,7 +104,6 @@ class HiveMQServiceClass {
         reconnectPeriod: 5000,
         connectTimeout: 30 * 1000,
         protocol: 'wss' as const,
-        protocolVersion: 5, // MQTT 5.0
       };
 
       this.client = mqtt.connect(this.brokerUrl, options);

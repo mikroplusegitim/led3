@@ -10,7 +10,7 @@ export default function Dashboard() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [currentBuilding, setCurrentBuilding] = useState(1);
   const [mqttConnected, setMqttConnected] = useState(false);
-  const [selectedDevice, setSelectedDevice] = useState('default');
+  const [selectedDevice] = useState('default');
 
   useEffect(() => {
     if (userData?.tenantId) {
