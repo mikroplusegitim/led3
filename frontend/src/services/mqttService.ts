@@ -45,7 +45,7 @@ class MQTTServiceClass {
     if (this.client?.connected) return
 
     const options = {
-      clientId: `web-client-${Math.random().toString(16).substr(2, 8)}`,
+      clientId: `web-client-${Math.random().toString(16).substring(2, 10)}`,
       clean: true,
       reconnectPeriod: 1000,
       connectTimeout: 30 * 1000,
