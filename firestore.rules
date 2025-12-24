@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserTenantId() {
+      return request.auth.token.tenantId;
+    }
+
+    function isOwner(tenantId) {
+      return isAuthenticated() && getUserTenantId() == tenantId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.role == 'admin';
+    }
+
+    // Tenants collection - only admins can create
+    match /tenants/{tenantId} {
+      allow read: if isOwner(tenantId) || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Users collection - tenant isolation
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == userId ||
+        isOwner(resource.data.tenantId)
+      );
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Devices collection - tenant isolation
+    match /devices/{deviceId} {
+      allow read, write: if isAuthenticated() && (
+        isOwner(resource.data.tenantId) ||
+        isOwner(request.resource.data.tenantId)
+      );
+    }
+
+    // Buildings collection - tenant isolation
+    match /buildings/{buildingId} {
+      allow read, write: if isAuthenticated() && (
+        isOwner(resource.data.tenantId) ||
+        isOwner(request.resource.data.tenantId)
+      );
+    }
+
+    // Apartment states - tenant isolation
+    match /apartmentStates/{stateId} {
+      allow read, write: if isAuthenticated() && (
+        isOwner(resource.data.tenantId) ||
+        isOwner(request.resource.data.tenantId)
+      );
+    }
+
+    // MQTT credentials - tenant isolation
+    match /mqttCredentials/{credId} {
+      allow read: if isAuthenticated() && isOwner(resource.data.tenantId);
+      allow write: if false; // Only created via Cloud Functions
+    }
+  }
+}

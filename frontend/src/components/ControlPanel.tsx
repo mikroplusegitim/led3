@@ -8,7 +8,7 @@ interface ControlPanelProps {
   mqttConnected: boolean
 }
 
-export default function ControlPanel({ currentBuilding, onBuildingChange, mqttConnected }: ControlPanelProps) {
+export default function ControlPanel({ currentBuilding, mqttConnected }: ControlPanelProps) {
   const [apartmentNumber, setApartmentNumber] = useState('')
   const [showSold, setShowSold] = useState(true)
   const [peyzajActive, setPeyzajActive] = useState(false)
