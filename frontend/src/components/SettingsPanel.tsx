@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useAuth } from '../context/AuthContext'
 import { MQTTService, StatusData } from '../services/mqttService'
 import './SettingsPanel.css'
 
@@ -19,12 +20,13 @@ interface BuildingData {
   salesRate: number
 }
 
-export default function SettingsPanel({ 
-  isOpen, 
-  onClose, 
-  currentBuilding, 
-  onBuildingChange 
+export default function SettingsPanel({
+  isOpen,
+  onClose,
+  currentBuilding,
+  onBuildingChange
 }: SettingsPanelProps) {
+  const { currentUser, userData } = useAuth()
   const [buildings, setBuildings] = useState<BuildingData[]>([
     { id: 1, name: 'A Blok', totalApartments: 50, available: 50, sold: 0, reserved: 0, salesRate: 0 },
     { id: 2, name: 'B Blok', totalApartments: 50, available: 50, sold: 0, reserved: 0, salesRate: 0 },
@@ -129,6 +131,14 @@ export default function SettingsPanel({
       <div className={`settings-panel ${isOpen ? 'open' : ''}`}>
         <div className="settings-header">
           <div>
+            <div className="user-profile">
+              <div className="user-avatar">👤</div>
+              <div className="user-info">
+                <div className="user-name">{userData?.displayName || 'Kullanıcı'}</div>
+                <div className="user-email">{currentUser?.email}</div>
+              </div>
+            </div>
+            <div className="header-divider"></div>
             <h2>Maket Aydınlatma Kontrol</h2>
             <p className="subtitle">Bina ve daire yönetim sistemi</p>
           </div>

@@ -50,9 +50,6 @@ export default function Dashboard() {
           <h2 className="header-title">
             💡 LED Kontrol
           </h2>
-          <p className="header-subtitle">
-            {userData?.displayName || currentUser?.email}
-          </p>
         </div>
         <div className="header-actions">
           <span className={`connection-badge ${mqttConnected ? 'connected' : 'disconnected'}`}>
